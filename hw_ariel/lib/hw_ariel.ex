@@ -1,4 +1,15 @@
+#Solution of activity 2.1 Functional Programming
+#
+#Use of Enum.map, Enum.filter, Enum.reduce, Enum.flat_map, Enum.zip, Enum.all?, Enum.with_index
+#
+#José Manuel García Zumaya A01784238
+#29 - 02 - 2024
+
 defmodule Hw.Ariel1 do
+
+  def invert(list), do: invert(list, [])
+  defp invert([], res), do: res
+  defp invert([head | tail], res), do: invert(tail, [head | res])
 
   def fahrenheit_to_celsius(farenheid) do
     (farenheid - 32) * 5/9
@@ -13,16 +24,16 @@ defmodule Hw.Ariel1 do
   end
 
   def roots(a, b, c) do
-    d = (:math.pow(b, 2)) - (4 * a * c)
+    d = (b**2) - (4 * a * c)
     cond do
       d < 0 -> "No roots"
       d == 0 -> -b / (2 * a)
-      d > 0 -> {(-b + :math.sqrt(d)) / (2 * a), (-b - :math.sqrt(d)) / (2 * a)}
+      d > 0 -> {(-b + d**(1/2)) / (2 * a), (-b - d**(1/2)) / (2 * a)}
     end
   end
 
   def bmi(weight, height) do
-    b = weight / (:math.pow(height, 2))
+    b = weight / (height ** 2)
     cond do
       b < 20 -> :underweight
       b >= 20 and b < 25 -> :normal
@@ -32,23 +43,19 @@ defmodule Hw.Ariel1 do
     end
   end
 
-  def factorial(n) do
-    cond do
-      n < 0 -> "Number must be positive"
-      n == 0 -> 1
-      n > 0 -> n * factorial(n - 1)
-    end
-  end
+  def factorial(n) when n < 0, do: :error
+  def factorial(0), do: 1
+  def factorial(n), do: n * factorial(n - 1)
 
-  def duplicate(list) do
-    Enum.flat_map(list, fn(x) -> [x, x] end)
-  end
+  def duplicate(list), do: duplicate(list, [])
+  defp duplicate([], res), do: invert(res)
+  defp duplicate([head | tail], res), do: duplicate(tail, [head, head | res])
 
   def pow(a, b) do
     cond do
       b < 0 -> "Number must be positive"
       b == 0 -> 1
-      b > 0 -> :math.pow(a, b)
+      b > 0 -> a**b
     end
   end
 
@@ -61,78 +68,95 @@ defmodule Hw.Ariel1 do
     end
   end
 
-  def enlist(list) do
-    Enum.map(list, fn(x) -> [x] end)
-  end
+  def enlist(list), do: enlist(list, [])
+  defp enlist([], res), do: invert(res)
+  defp enlist([head | tail], res), do: enlist(tail, [[head] | res]) #Al reves resulta en lista anidada por [elemento, lista] y estarias haciendo [lista | [lista]], donde [lista] es un elemento que se agrega a la lista entonces se anida
 
-  def positives(list) do
-    Enum.filter(list, fn(x) -> x > 0 end)
-  end
-
-  def add_list(list) do
-    Enum.reduce(list, 0, fn(x, acc) -> x + acc end)
-  end
-
-  def invert_pairs(list) do
-    Enum.map(list, fn{a, b} -> {b, a} end)
-  end
-
-  def is_atom_list(list) do
-    Enum.all?(list, fn(x) -> is_atom(x) end)
-  end
-
-  def swapper(list, a, b) do #Error en el orden de argumentos en test
-    Enum.map(list, fn
-    x when x == a -> b
-    x when x == b -> a
-    x -> x
-    end)
-  end
-
-  def dot_product(a, b) do
-    Enum.reduce(Enum.zip(a, b), 0, fn {x, y}, acc -> x * y + acc end)
-  end
-
-  def average(list) do
+  def positives(list), do: positives(list, [])
+  defp positives([], res), do: invert(res)
+  defp positives([head | tail], res) do
     cond do
-      length(list) == 0 -> 0
-      true -> add_list(list) / length(list)
+      head > 0 -> positives(tail, [head | res])
+      true -> positives(tail, res)
     end
   end
 
-  def std_dev(list) do
-    n = length(list)
+  def add_list(list), do: add_list(list, 0)
+  defp add_list([], acc), do: acc
+  defp add_list(list, acc), do: add_list(tl(list), acc + hd(list))
 
-    if n == 0 do
-      0
-    else
-      m = average(list)
-      :math.sqrt(Enum.reduce(list, 0, fn(x, acc) -> :math.pow(x - m, 2) + acc end) / n)
+  def invert_pairs(list), do: invert_pairs(list, [])
+  defp invert_pairs([], res), do: invert(res)
+  defp invert_pairs([head | tail], res) do
+    {a, b} = head
+    invert_pairs(tail, [{b, a} | res])
+  end
+
+  def is_atom_list([]), do: true
+  def is_atom_list([head | tail]) do
+  if is_atom(head) do
+    is_atom_list(tail)
+  else
+    false
     end
   end
 
-  def replic(n, list) do #Error en el orden de argumentos en test
+  def swapper(list, a, b), do: swapper(list, a, b, [])
+  defp swapper([], _a, _b, res), do: invert(res)
+  defp swapper([head | tail], a, b, res) do
     cond do
-      n <= 0 -> [] # Maneja el caso en que n es 0 o negativo, devolviendo una lista vacía.
-      true -> Enum.flat_map(list, fn(x) -> List.duplicate(x, n) end) # Para cualquier otro caso, procede como antes.
+      head == a -> swapper(tail, a, b, [b | res])
+      head == b -> swapper(tail, a, b, [a | res])
+      true -> swapper(tail, a, b, [head | res])
     end
   end
 
-  def expand(list) do
-    Enum.with_index(list)
-    |> Enum.flat_map(fn {x, index} ->
-      List.duplicate(x, index + 1)
-    end)
+  def dot_product(a, b) when length(a) != length(b), do: :error
+  def dot_product(a, b), do: dot_product(a, b, 0)
+  defp dot_product([], [], acc), do: acc
+  defp dot_product([ha | ta], [hb | tb], acc) do
+    dot_product(ta, tb, ha * hb + acc)
   end
 
-  def binary(n) do
-    cond do
-      n < 0 -> "Number must be positive"
-      n == 0 -> []
-      true -> Integer.to_string(n, 2)
-      |> String.graphemes()
-      |> Enum.map(&String.to_integer/1)
-    end
-  end
+  def average(list), do: average(list, 0, length(list))
+  defp average([], acc, 0), do: 0
+  defp average([], acc, len), do: acc / len
+  defp average([head | tail], acc, len), do: average(tail, head + acc, len)
+
+  def std_dev(list), do: std_dev(list, 0, length(list), average(list))
+  defp std_dev([], _acc, 0, _mean), do: 0
+  defp std_dev([], acc, len, _mean), do: (acc / len) ** (1/2)
+  defp std_dev([head | tail], acc, len, mean), do: std_dev(tail, ((head - mean) ** 2) + acc, len, mean)
+
+  defp replicate_element(element, n), do: replicate_element(element, n, [])
+  defp replicate_element(_element, 0, res), do: res
+  defp replicate_element(element, n, res), do: replicate_element(element, n - 1, [element | res]) # | El primero en ingresar sera el ultimo en la lista resultante ya que es FIFO
+
+  def replic(n, list), do: replic(n, list, [])
+  defp replic(_n, [], res), do: invert(res)
+  defp replic(n, [head | tail], res), do: replic(n, tail, replicate_element(head, n) ++ res)
+
+  def expand(list), do: expand(invert(list), [], length(list))
+  defp expand([], res, _len), do: res
+  defp expand([head | tail], res, len), do: expand(tail, replicate_element(head, len) ++ res, len - 1) #Notar que ++ no manda al head al final, lo conserva en principio es suma de listas
+
+  def binary(n), do: binary(n, [])
+  defp binary(0, res), do: res
+  defp binary(n, res), do: binary(div(n, 2), [rem(n, 2) | res])
 
 end
+
+IO.inspect(Hw.Ariel1.duplicate([1, 2, 3]))
+IO.inspect(Hw.Ariel1.enlist([:a, :b, :c]))
+IO.inspect(Hw.Ariel1.positives([12, -4, 3, -1, -10, -13, 6, -5]))
+IO.inspect(Hw.Ariel1.add_list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]))
+IO.inspect(Hw.Ariel1.invert_pairs([{1, 2}, {:a, :b}, {"Monday", "Tuesday"}]))
+IO.inspect(Hw.Ariel1.is_atom_list([:a, :b, :c, :d, :e]))
+IO.inspect(Hw.Ariel1.swapper([:a, :b, :c, :b, :d], :a, :b))
+IO.inspect(Hw.Ariel1.dot_product([1.3, 3.4, 5.7, 9.5, 10.4], [-4.5, 3.0, 1.5, 0.9, 0.0]))
+IO.inspect(Hw.Ariel1.average([1.7, 4.5, 0, 2.0, 3.4, 5, 2.5, 2.2, 1.2]))
+IO.inspect(Hw.Ariel1.std_dev([4, 8, 15, 16, 23, 42]))
+#IO.inspect(Hw.Ariel1.std_dev([]))
+IO.inspect(Hw.Ariel1.replic(4, [1, 2, 3, 4]))
+IO.inspect(Hw.Ariel1.expand([1, 2, 3, 4]))
+IO.inspect(Hw.Ariel1.binary(121))
