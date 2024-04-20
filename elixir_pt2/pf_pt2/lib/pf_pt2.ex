@@ -163,5 +163,4 @@ defmodule Hw.Ariel2 do
       true -> decode(tail, res ++ [head])
     end
   end
-
 end
